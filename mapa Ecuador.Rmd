@@ -1,0 +1,60 @@
+---
+title: "College Density Population"
+output: html_notebook
+---
+<b>Based in:</b>.
+1. Accessing OpenStreetMap data with R by Dominic Royé
+2. Streetmaps by ggplot2tutor
+
+<b>Links:</b>
+1. https://dominicroye.github.io/en/2018/accessing-openstreetmap-data-with-r/
+2. https://ggplot2tutor.com/tutorials/streetmaps
+
+<h1>Libraries</h1>
+
+```{r}
+#installing libraries
+if(!require("osmdata")) install.packages("osmdata")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("sf")) install.packages("sf")
+if(!require("ggmap")) install.packages("ggmap")
+
+#load packages
+library(tidyverse)
+library(osmdata)
+library(sf)
+library(ggmap)
+```
+
+<h2>Building the query</h2>
+```{r}
+#plot area
+plot_area <- c(-78.62,-0.348,-78.38,-0.06)
+# buildeing a query.
+college_feature <- plot_area %>%
+      opq(timeout = 25*100) %>%  #no timeout, usually 26 sec
+       add_osm_feature(key = "amenity", # feature key
+                  value = c("college", "library")) #feature value
+college_density <- osmdata_sf(college_feature)  #call the query -OSM 
+print(college_density) #print query 
+
+```
+<h2>Plot</h2>
+```{r}
+?geom_sf
+#?geom_sf = visualize simple feature
+#inherit.aes = 	If FALSE, overrides the default aesthetics, rather than combining with them. This is most useful for helper functions that define both data and aesthetics and shouldn't inherit behaviour from the default plot specification, e.g. borders().
+ggplot() +
+  geom_sf(data = college_density$osm_points,
+          inherit.aes = FALSE,
+          color = "#FFFF33",
+          size = .1,
+          alpha = .8)+ theme_void()  + theme(plot.background = element_rect(fill= "#000000")) #datk background
+
+
+```
+<h2>Save imag.png</h2>
+```{r}
+ggsave("map_college_density.png", width = 16, height = 9)
+```
+
